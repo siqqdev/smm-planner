@@ -1,4 +1,4 @@
-# Project README
+# SMM PLANNER
 
 ## Project Overview
 Welcome to my project! This website is meticulously crafted using Next.js, TypeScript, and Redux on the frontend, paired with Django and Django Rest Framework on the backend. It is purpose-built for social media managers, providing seamless post planning and idea recording capabilities.
