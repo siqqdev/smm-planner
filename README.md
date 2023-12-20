@@ -26,9 +26,11 @@ In the near future, anticipate the addition of the following features:
 To check out the project, follow these steps:
 
 1. Clone the repository.
-2. Navigate to the project directory.
-3. Install dependencies using `npm install`.
-4. Run the development server with `npm run dev`.
+2. Install dependencies using `npm install`. in smm-planner-frontend folder)
+3. Run the development server with `npm run dev`. 
+4. Install dependencies using pip `pip install -r requirements.txt` (in smm-planner-backend folder)
+5. Make migrations `python manage.py migrate` then `python manage.py makemigrations`
+6. Run the development server with `python manage.py runserver`. 
 
 ### Managing Ideas
 
