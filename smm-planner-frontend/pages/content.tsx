@@ -23,7 +23,7 @@ const Content = () => {
         <div className='mt-10 justify-center items-center flex-col max-w-5xl mx-auto grid grid-cols-5 gap-8'>
           {
             receivedPosts.map((post, i) => (
-              <div className='w-40 h-60 border-2 border-gray rounded-md flex flex-col items-center hover:bg-gray-200 cursor-pointer'>
+              <div className='w-40 h-60 border-2 border-gray rounded-md flex flex-col items-center hover:bg-gray-200 cursor-pointer transition-all'>
                 <div className='font-bold text-2xl'>
                   {post.postDay}.{post.postMonth}.{post.postYear}
                 </div>
