@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, subMonths } from 'date-fns';
-import { useAppDispatch, useAppSelector } from '@/hooks';
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, subMonths, setMonth } from 'date-fns';
+import { useAppDispatch } from '@/hooks';
 import { handleAddPostClicked } from '@/store/addPostSlice';
 import Head from 'next/head';
-import AddPost from './addPost';
-
-
+import axios, { AxiosResponse } from 'axios';
 
 interface CalendarProps {
  handlePostClicked?: () => void,
 }
+
+const apiUrl = 'http://127.0.0.1:8000/'
 
 const Calendar: React.FC<CalendarProps> = () => {
   let currentDate = new Date();
@@ -19,6 +19,7 @@ const Calendar: React.FC<CalendarProps> = () => {
   const invAddPostStyle: string = 'flex border-2 border-black rounded-md w-20 h-10 justify-center items-center p-10 hover:bg-green-100 transition-all duration-300 shadow-md'
   const defAddPostStyle: string = 'flex border-2 border-black rounded-md w-20 h-10 justify-center items-center p-10 mt-3 hover:bg-yellow-100 transition-all duration-300 shadow-md'
   const [hoveredDays, setHoveredDays] = useState<Record<string, boolean>>({});
+  const [receivedDays, setReceivedDays] = useState<string[]>([]);
 
   const dispatch = useAppDispatch();
 
@@ -32,12 +33,22 @@ const Calendar: React.FC<CalendarProps> = () => {
   }, [currentMonth])
 
   const handleNextMonth = () => {
-    setCurrentMonth((prevMonth) => addMonths(prevMonth, 1))
-  }
+    setCurrentMonth((prevMonth) => {
+      const nextMonth = addMonths(prevMonth, 1);
+      fetchMonthData(nextMonth);
+      return nextMonth;
+    });
+  };
   
   const handlePreviousMonth = () => {
-    setCurrentMonth((prevMonth) => subMonths(prevMonth, 1))
-  }
+    setCurrentMonth((prevMonth) => {
+      const nextMonth = subMonths(prevMonth, 1);
+      fetchMonthData(nextMonth);
+      return nextMonth;
+    });
+  };
+  
+
 
   const handleMouseEnter = (day: Date) => {
     if (isClient) {
@@ -60,6 +71,31 @@ const Calendar: React.FC<CalendarProps> = () => {
     dispatch(handleAddPostClicked( {isAddPostOpened: true, openedDate: day} ));
   }
 
+  const fetchMonthData = (date: Date) => {
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    console.log(`${apiUrl}/api/posts/get_days/?month=${month}&year=${year}`);
+    axios.get(`${apiUrl}/api/posts/get_days/?month=${month}&year=${year}`)
+      .then((res: AxiosResponse<any, any>) => {
+        console.log(res.data);
+  
+        const daysWithPosts = res.data?.days_with_posts || [];
+  
+        const receivedDaysArray = daysWithPosts.map((day: number) => day.toString());
+  
+        setReceivedDays(receivedDaysArray);
+        console.log('data', receivedDaysArray);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+  };
+  
+  
+  useEffect(() => {
+    fetchMonthData(currentDate);
+  }, []);
+  
   return (
       <div>
         <Head>
@@ -86,25 +122,39 @@ const Calendar: React.FC<CalendarProps> = () => {
           </div>
         </div>
     <div className='grid grid-cols-7 gap-3 justify-center items-center mx-auto max-w-screen-md mt-4'>
-      {daysInMonth.map((day) => (
-        <div
-          key={format(day, 'yyyy-MM-dd')}
-          className={`${hoveredDays[format(day, 'yyyy-MM-dd')] ? invAddPostStyle : defAddPostStyle} cursor-pointer`}
-          onMouseEnter={() => handleMouseEnter(day)}
-          onMouseLeave={() => handleMouseLeave(day)}
-          onClick={() => handleAddPost(day)}
-        > 
-        {hoveredDays[format(day, 'yyyy-MM-dd')] ? (
-          <button>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-9 h-9">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-          </button>
-        ) : (
-          <p>{format(day, 'dd')}</p>
-        )}
-        </div>
-      ))}
+    {daysInMonth.map((day) => (
+  <div
+    key={format(day, 'yyyy-MM-dd')}
+    className={`${hoveredDays[format(day, 'yyyy-MM-dd')] ? invAddPostStyle : defAddPostStyle} cursor-pointer ${
+      Array.isArray(receivedDays) && receivedDays.includes(day.getDate().toString()) ? 'bg-yellow-200' : ''
+    }`}
+    onMouseEnter={() => handleMouseEnter(day)}
+    onMouseLeave={() => handleMouseLeave(day)}
+    onClick={() => handleAddPost(day)}
+  >
+    {hoveredDays[format(day, 'yyyy-MM-dd')] ? (
+      <button>
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          fill='none'
+          viewBox='0 0 24 24'
+          strokeWidth={1.5}
+          stroke='currentColor'
+          className='w-9 h-9'
+        >
+          <path
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            d='M12 4.5v15m7.5-7.5h-15'
+          />
+        </svg>
+      </button>
+    ) : (
+      <p>{format(day, 'dd')}</p>
+    )}
+  </div>
+))}
+
     </div>
       </div>
     

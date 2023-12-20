@@ -4,38 +4,48 @@ from rest_framework.response import Response
 from .models import Ideas, Posts
 from .serializers import PostsSerializer, IdeaSerializer
 
-class PostsApi(ListCreateAPIView):
+class PostsListApi(ListCreateAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
 
+class PostsForDateApi(APIView):
     def get(self, request, *args, **kwargs):
-        day = int(request.query_params.get('day', 0))
-        month = int(request.query_params.get('month', 0))
-        year = int(request.query_params.get('year', '0').split('/')[0])
+        day = int(request.query_params.get('day', None), 10)
+        month = int(request.query_params.get('month', None), 10)
+        year = int(request.query_params.get('year', None), 10)
 
-        if day and month and year:
+
+        print(f"Day: {day}, Month: {month}, Year: {year}")
+
+        if day is not None and month is not None and year is not None:
             posts = Posts.objects.filter(postDay=day, postMonth=month, postYear=year)
-            serializer = self.get_serializer(posts, many=True)
-            return Response({'Posts List for Date': serializer.data})
+            serializer = PostsSerializer(posts, many=True)
+            return Response(serializer.data)
         else:
-            return super().list(request, *args, **kwargs)
+            return Response({'error': 'Invalid parameters provided'})
 
+class DaysWithPostsApi(APIView):
+    def get(self, request, *args, **kwargs):
+        month = int(request.query_params.get('month', None))
+        year = int(request.query_params.get('year', None))
 
+        print(f"Month: {month}, Year: {year}")
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({'Posts List': serializer.data})
-    
+        if month is not None and year is not None:
+            posts = Posts.objects.filter(postMonth=month, postYear=year)
+            days_with_posts = list(set([post.postDay for post in posts]))
+            return Response({'days_with_posts': days_with_posts})
+        else:
+            return Response({'error': 'Invalid parameters provided'})
+
 class IdeasApi(APIView):
     def get(self, request):
         ideas_data = Ideas.objects.all()
         serializer = IdeaSerializer(ideas_data, many=True)
         return Response({'Ideas list': serializer.data})
+
     def post(self, request):
         serializer = IdeaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'Ideas list': serializer.data})
-        

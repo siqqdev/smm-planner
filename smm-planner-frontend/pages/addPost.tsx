@@ -109,19 +109,15 @@ const AddPost: React.FC<AddPostProps> = () => {
 
   const formatDate = () => {
     setPostDay(openedDate?.getDate());
-    setPostMonth(openedDate?.getMonth());
+    setPostMonth(openedDate?.getMonth() !== undefined ? openedDate.getMonth() + 1 : undefined);
     setPostYear(openedDate?.getFullYear());
-    if (postMonth !== undefined) {
-      setPostMonth(postMonth + 1)
-    }
-
   }
 
   useEffect(() => {
     formatDate();
   }, [openedDate])
 
-  const handleSubmit = () => {
+const handleSubmit = () => {
   console.log(contentType);
   console.log(postText);
   console.log(inputFile);
@@ -134,7 +130,11 @@ const AddPost: React.FC<AddPostProps> = () => {
 
   formData.append('socialMedia', chosenSocialMedia);
   formData.append('postDay', postDay !== undefined ? postDay.toString() : '');
-  formData.append('postMonth', postMonth !== undefined ? postMonth.toString() : '');
+  if (postMonth !==  undefined) {
+    const monthToSend = postMonth;
+    formData.append('postMonth', monthToSend.toString());
+  }
+  
   formData.append('postYear', postYear !== undefined ? postYear.toString() : '');
 
   formData.append('postText', postText);
@@ -146,7 +146,9 @@ const AddPost: React.FC<AddPostProps> = () => {
   axios.post(`${apiUrl}api/posts/`, formData)
     .then(res => {
       console.log(res.data);
-    })
+      console.log(`${apiUrl}api/posts/`);
+      
+    })  
     .catch(err => {
       console.error(err.response);
     });
@@ -163,16 +165,23 @@ const AddPost: React.FC<AddPostProps> = () => {
     const fetchData = async () => {
       if (postDay !== undefined && postMonth !== undefined && postYear !== undefined) {
         try {
-          const res = await axios.get(`${apiUrl}api/posts/get/?day=${postDay}&month=${postMonth}&year=${postYear}/`);
+          const res = await axios.get(`${apiUrl}api/posts/get/?day=${postDay}&month=${postMonth}&year=${postYear}`);
           setReceivedData(res.data);
+          console.log(`${apiUrl}api/posts/get/?day=${postDay}&month=${postMonth}&year=${postYear}/`);
+          console.log(res.data);
+          
+          
         } catch (err: any) {
           console.error(err.response);
         }
       }
     };
 
-    fetchData();
+    if (postDay !== undefined && postMonth !== undefined && postYear !== undefined) {
+      fetchData();
+    }
   }, [postDay, postMonth, postYear]);
+  
   
   return (
     

@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { animated } from 'react-spring'
 import { useAppDispatch } from '../hooks'
 import { handleAddIdeaClicked } from '../store/addIdeaSlice';
 import { Button, Input, Textarea } from '@material-tailwind/react';
-import Ideas from './ideas';
 import axios from 'axios';
+import { setId } from '@material-tailwind/react/components/Tabs/TabsContext';
 
 interface Idea {
   title: string,
@@ -17,28 +17,22 @@ interface AddIdeaProps {
   ideasArray: Idea[]
 }
 
+type color = 'black' | 'green' | 'red'
+
 const AddIdea: React.FC<AddIdeaProps> = ({}) => {
 
 const [ideaTitle, setIdeaTitle] = useState<string>('')
 const [ideaText, setIdeaText] = useState<string>('')
-const [ideasArray, setIdeasArray] = useState<Idea[]>([])
+const [isIdeaAdded, setIdeaAdded] = useState<color>('black')
 
 const dispatch = useAppDispatch();
 
 const handleAddIdeaClose = () => {
   dispatch(handleAddIdeaClicked({ isAddIdeaOpened: false }))
+  setIdeaAdded('black')
 }
 
 const apiUrl = 'http://127.0.0.1:8000/'
-
-const sendData = (title: string, text: string) => {
-  const dataToSend = new FormData();
-  dataToSend.append('ideaTitle', title)
-  dataToSend.append('ideaText', text)
-  axios
-  .post (apiUrl, dataToSend)
-  
-} 
 
 const handleAddNewIdea = () => {
   const formData = new FormData();
@@ -46,11 +40,26 @@ const handleAddNewIdea = () => {
   formData.append('ideaText', ideaText)
   
   axios.post(`${apiUrl}/api/ideas/`, formData)
-  .then(res => console.log('data sent:', res.data))
-  .catch(err => console.error(err.response))
-}
+      .then(res => {
+        if (res.status === 200) {
+          setIdeaAdded('green');
+          console.log('data sent:', res.data);
+          setIdeaText('');
+          setIdeaTitle('');
+          setTimeout(() => {
+            dispatch(handleAddIdeaClicked({ isAddIdeaOpened: false }))
+          }, 1000)
+        }
+      })
+      .catch(err => {
+        setIdeaAdded('red');
+        console.log('err', err.response);
+        setIdeaText('Try to fill idea again');
+        setIdeaTitle('');
+      });
+  }
 
-
+  const buttonColor = isIdeaAdded === 'green' ? 'green' : (isIdeaAdded === 'red' ? 'red' : 'black');
 
   return (
     <animated.div>
@@ -66,7 +75,7 @@ const handleAddNewIdea = () => {
               <div className='flex flex-col gap-y-2 w-full'>
                 <Input label='Idea Title' value={ideaTitle} onChange={(e) => { setIdeaTitle(e.target.value); } } crossOrigin={undefined}/>
                 <Textarea label='Write your idea here...' value={ideaText} onChange={(e) => {setIdeaText(e.target.value)}}></Textarea> 
-                <Button onClick={handleAddNewIdea} placeholder=' '>Add Idea</Button>
+                <Button onClick={handleAddNewIdea} color={buttonColor} placeholder=' '>Add Idea</Button>
               </div>
             </div>
           </div>
