@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 const Content = () => {
 
@@ -23,7 +24,7 @@ const Content = () => {
         <div className='mt-10 justify-center items-center flex-col max-w-5xl mx-auto grid grid-cols-5 gap-8'>
           {
             receivedPosts.map((post, i) => (
-              <div className='w-40 h-60 border-2 border-gray rounded-md flex flex-col items-center hover:bg-gray-200 cursor-pointer transition-all'>
+              <div key={i} className='w-40 h-60 border-2 border-gray rounded-md flex flex-col items-center hover:bg-gray-200 cursor-pointer transition-all'>
                 <div className='font-bold text-2xl'>
                   {post.postDay}.{post.postMonth}.{post.postYear}
                 </div>
@@ -34,7 +35,7 @@ const Content = () => {
                   {post.postType}
                 </div>
                 <div className='w-36 h-36'>
-                  {post.postFile && <img src={post.postFile} alt="Post Image" />}
+                  {post.postFile && <Image src={post.postFile} alt="Post Image" />}
                 </div>
               </div>
             ))

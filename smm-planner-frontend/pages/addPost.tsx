@@ -8,6 +8,7 @@ import { animated } from 'react-spring';
 import { RootState } from '@/store';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import Image from 'next/image'
 
 
 
@@ -245,7 +246,7 @@ const handleSubmit = () => {
                         <p>{post.postText}</p>  
                       </div>
                       <div className='h-32 w-32'>
-                        {post.postFile && <img src={post.postFile} alt="Post Image" />}
+                        {post.postFile && <Image src={post.postFile} alt="Post Image" />}
                       </div>
                     </div>
                   ))
